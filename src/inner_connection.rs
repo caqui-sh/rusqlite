@@ -3,7 +3,13 @@ use std::ffi::{c_char, c_int, CStr};
 use std::path::Path;
 use std::ptr;
 use std::str;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Once};
+
+extern "C" {
+    fn sqlite3_gitvfs_init_impl(base_dir: *const std::ffi::c_char) -> std::ffi::c_int;
+}
+
+static INIT_VFS: Once = Once::new();
 
 use super::ffi;
 use super::{Connection, InterruptHandle, Name, OpenFlags, PrepFlags, Result};
@@ -84,6 +90,12 @@ impl InnerConnection {
         } else {
             false // flag SQLITE_OPEN_EXRESCODE is ignored by SQLite version < 3.37.0
         };
+
+        INIT_VFS.call_once(|| {
+            unsafe {
+                sqlite3_gitvfs_init_impl(ptr::null());
+            }
+        });
 
         unsafe {
             let mut db: *mut ffi::sqlite3 = ptr::null_mut();

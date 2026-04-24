@@ -93,7 +93,7 @@ mod test {
     #[test]
     fn test_default_busy() -> Result<()> {
         let temp_dir = tempfile::tempdir().unwrap();
-        let path = temp_dir.path().join("test.db3");
+        let path = temp_dir.path().join("test.sqlite");
 
         let mut db1 = Connection::open(&path)?;
         let tx1 = db1.transaction_with_behavior(TransactionBehavior::Exclusive)?;
@@ -122,7 +122,7 @@ mod test {
         }
 
         let temp_dir = tempfile::tempdir().unwrap();
-        let path = temp_dir.path().join("busy-handler.db3");
+        let path = temp_dir.path().join("busy-handler.sqlite");
 
         let db1 = Connection::open(&path)?;
         db1.execute_batch("CREATE TABLE IF NOT EXISTS t(a)")?;

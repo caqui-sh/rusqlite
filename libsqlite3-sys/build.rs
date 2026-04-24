@@ -303,6 +303,11 @@ mod build_bundled {
             }
         }
         println!("cargo:rerun-if-env-changed=LIBSQLITE3_FLAGS");
+        println!("cargo:rerun-if-changed=../git-sqlite-vfs/git-vfs/gitvfs.c");
+
+        cfg.file("../git-sqlite-vfs/git-vfs/gitvfs.c")
+            .include(lib_name)
+            .include("../git-sqlite-vfs/git-vfs");
 
         cfg.compile(lib_name);
 

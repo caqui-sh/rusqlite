@@ -1,0 +1,3 @@
+[submodule "git-sqlite-vfs"]
+	path = git-sqlite-vfs
+	url = https://github.com/caqui-sh/git-sqlite-vfs.git
