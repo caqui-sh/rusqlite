@@ -1397,7 +1397,7 @@ mod test {
 
     #[test]
     fn test_open_failure() {
-        let filename = "no_such_file.db";
+        let filename = "no_such_file.sqlite";
         let result = Connection::open_with_flags(filename, OpenFlags::SQLITE_OPEN_READ_ONLY);
         let err = result.unwrap_err();
         if let Error::SqliteFailure(e, Some(msg)) = err {
