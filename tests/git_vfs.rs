@@ -6,9 +6,8 @@ fn test_git_vfs_intercepts_db_files() -> Result<()> {
     let temp_dir = tempfile::tempdir().unwrap();
     let db_path = temp_dir.path().join("my_versioned_file.db");
 
-    // Standard open should use the globally registered git-sqlite-vfs
-    // because we patched rusqlite's open_with_flags to register it as default.
-    let conn = Connection::open(&db_path)?;
+    // Explicitly request the 'gitvfs' VFS.
+    let conn = Connection::open_with_flags_and_vfs(&db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | rusqlite::OpenFlags::SQLITE_OPEN_CREATE, "gitvfs")?;
     conn.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)", [])?;
     
     // Insert enough data to ensure multiple pages are flushed to disk
@@ -42,9 +41,30 @@ fn test_git_vfs_intercepts_db_files() -> Result<()> {
     assert!(page_files_count > 0, "There should be sharded page files inside pages/");
 
     // Now re-open connection to verify we can query the data
-    let conn2 = Connection::open(&db_path)?;
+    let conn2 = Connection::open_with_flags_and_vfs(&db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE, "gitvfs")?;
     let count: i64 = conn2.query_row("SELECT COUNT(*) FROM users", [], |row| row.get(0))?;
     assert_eq!(count, 100, "All 100 rows should be queryable from the sharded database");
+
+    Ok(())
+}
+
+#[test]
+fn test_standard_vfs_is_default_and_not_intercepted() -> Result<()> {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let db_path = temp_dir.path().join("standard_file.db");
+
+    // Standard open should use the default OS VFS, not gitvfs.
+    let conn = Connection::open(&db_path)?;
+    conn.execute("CREATE TABLE test (id INTEGER PRIMARY KEY)", [])?;
+    drop(conn);
+
+    // Verify that the 'db_path' is a FILE (standard SQLite behavior), not a directory.
+    let metadata = fs::metadata(&db_path).expect("Database path should exist");
+    assert!(metadata.is_file(), "Standard .db should be a flat file, not a directory!");
+    
+    // Ensure the 'pages' directory does NOT exist inside it
+    let pages_dir = db_path.join("pages");
+    assert!(!pages_dir.exists(), "pages directory should NOT exist for a standard database file");
 
     Ok(())
 }

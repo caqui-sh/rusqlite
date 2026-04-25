@@ -1,5 +1,25 @@
 # Rusqlite
 
+> [!IMPORTANT]
+> **Fork: git-sqlite-vfs Integration**
+>
+> This fork includes integrated support for the [`git-sqlite-vfs`](https://github.com/caqui-sh/git-sqlite-vfs) extension, which enables Git-friendly sharded storage for SQLite databases.
+>
+> **Key Modifications:**
+> 1. **Submodule Integration:** The `git-sqlite-vfs` source is included as a git submodule.
+> 2. **Static Compilation:** `libsqlite3-sys` is patched to automatically compile and link `gitvfs.c` when using the `bundled` feature.
+> 3. **Automatic Initialization:** `rusqlite` automatically initializes the `gitvfs` extension on the first database connection attempt.
+> 4. **Explicit Opt-in (VFS Patch):** The `gitvfs` extension has been patched (`gitvfs.c`) to **not** register itself as the default global VFS. This ensures standard `.db` or `.sqlite` files are handled normally by the OS. To use the versioned storage, you must explicitly request the `gitvfs` VFS:
+>
+> ```rust
+> use rusqlite::{Connection, OpenFlags};
+> let conn = Connection::open_with_flags_and_vfs(
+>     "my_versioned_db.db",
+>     OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE,
+>     "gitvfs"
+> )?;
+> ```
+
 [![Latest Version](https://img.shields.io/crates/v/rusqlite.svg)](https://crates.io/crates/rusqlite)
 [![Documentation](https://docs.rs/rusqlite/badge.svg)](https://docs.rs/rusqlite)
 [![Build Status (GitHub)](https://github.com/rusqlite/rusqlite/workflows/CI/badge.svg)](https://github.com/rusqlite/rusqlite/actions)
