@@ -6,8 +6,8 @@ fn test_git_vfs_intercepts_db_files() -> Result<()> {
     let temp_dir = tempfile::tempdir().unwrap();
     let db_path = temp_dir.path().join("my_versioned_file.db");
 
-    // Explicitly request the 'gitvfs' VFS.
-    let conn = Connection::open_with_flags_and_vfs(&db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | rusqlite::OpenFlags::SQLITE_OPEN_CREATE, "gitvfs")?;
+    // Explicitly request the 'git' VFS.
+    let conn = Connection::open_with_flags_and_vfs(&db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | rusqlite::OpenFlags::SQLITE_OPEN_CREATE, "git")?;
     conn.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)", [])?;
     
     // Insert enough data to ensure multiple pages are flushed to disk
@@ -41,7 +41,7 @@ fn test_git_vfs_intercepts_db_files() -> Result<()> {
     assert!(page_files_count > 0, "There should be sharded page files inside pages/");
 
     // Now re-open connection to verify we can query the data
-    let conn2 = Connection::open_with_flags_and_vfs(&db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE, "gitvfs")?;
+    let conn2 = Connection::open_with_flags_and_vfs(&db_path, rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE, "git")?;
     let count: i64 = conn2.query_row("SELECT COUNT(*) FROM users", [], |row| row.get(0))?;
     assert_eq!(count, 100, "All 100 rows should be queryable from the sharded database");
 

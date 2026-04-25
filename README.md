@@ -8,15 +8,15 @@
 > **Key Modifications:**
 > 1. **Submodule Integration:** The `git-sqlite-vfs` source is included as a git submodule.
 > 2. **Static Compilation:** `libsqlite3-sys` is patched to automatically compile and link `gitvfs.c` when using the `bundled` feature.
-> 3. **Automatic Initialization:** `rusqlite` automatically initializes the `gitvfs` extension on the first database connection attempt.
-> 4. **Explicit Opt-in (VFS Patch):** The `gitvfs` extension has been patched (`gitvfs.c`) to **not** register itself as the default global VFS. This ensures standard `.db` or `.sqlite` files are handled normally by the OS. To use the versioned storage, you must explicitly request the `gitvfs` VFS:
+> 3. **Automatic Initialization:** `rusqlite` automatically initializes the `git` extension on the first database connection attempt.
+> 4. **Explicit Opt-in (VFS Patch):** The `git` extension has been patched (`gitvfs.c`) to **not** register itself as the default global VFS. This ensures standard `.db` or `.sqlite` files are handled normally by the OS. To use the versioned storage, you must explicitly request the `git` VFS:
 >
 > ```rust
 > use rusqlite::{Connection, OpenFlags};
 > let conn = Connection::open_with_flags_and_vfs(
 >     "my_versioned_db.db",
 >     OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE,
->     "gitvfs"
+>     "git"
 > )?;
 > ```
 
